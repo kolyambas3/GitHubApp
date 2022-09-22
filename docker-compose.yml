@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  database:
+    container_name: git_database
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: git_app
+    volumes:
+      - './app/mysql:/var/lib/mysql'
+    ports:
+      - '3306:3306'
+
+  nginx:
+    platform: amd64
+    container_name: git_nginx
+    image: nginx:latest
+    hostname: localhost
+    command: [nginx-debug, '-g', 'daemon off;']
+    working_dir: /app
+    environment:
+      - NGINX_HOST=127.0.0.1
+      - NGINX_PORT=80
+    ports:
+      - '8080:80'
+    volumes:
+      - './:/app'
+      - './app/app/nginx/conf.d:/etc/nginx/conf.d'
+    depends_on:
+      - database
+      - php
+
+  php:
+    container_name: git_php
+    build:
+      context: .
+      target: php
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - './:/app'
+    depends_on:
+      - database
+
+  composer:
+    restart: "no"
+    container_name: git_composer
+    image: library/composer:latest
+    command: install
+    working_dir: /app
+    volumes:
+    - './:/app'
