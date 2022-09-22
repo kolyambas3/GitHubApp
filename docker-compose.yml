@@ -26,7 +26,7 @@ services:
       - '8080:80'
     volumes:
       - './:/app'
-      - './app/app/nginx/conf.d:/etc/nginx/conf.d'
+      - './app/nginx/conf.d:/etc/nginx/conf.d'
     depends_on:
       - database
       - php
