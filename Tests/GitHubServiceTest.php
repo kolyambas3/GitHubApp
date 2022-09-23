@@ -2,28 +2,48 @@
 
 namespace App\Tests;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use App\Service\GitHubService;
+use PHPUnit\Framework\TestCase;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class GitHubServiceTest extends WebTestCase
+class GitHubServiceTest extends TestCase
 {
     /**
-     * @throws TransportExceptionInterface
-     * @throws ServerExceptionInterface
-     * @throws RedirectionExceptionInterface
-     * @throws DecodingExceptionInterface
-     * @throws ClientExceptionInterface
+     * @dataProvider dataProvider
      */
-    public function testSearchData(): void
+    public function testCalcScore($input, $expected):void
     {
-        $client = static::createClient();
-        $crawler = $client->request(
-            'GET',
-            '/api/v1/terms?q=js');
-        self::assertResponseIsSuccessful();
+        $client = $this->createMock(HttpClientInterface::class);
+        $gitHubService = new GitHubService($client);
+        $positive = $gitHubService->calcScore($input[0], $input[1]);
+        $this->assertEquals($positive, $expected);
+    }
+
+    public function dataProvider(): iterable
+    {
+        yield [
+            [
+                4000, 0
+            ],
+            10.00
+        ];
+        yield [
+            [
+                0, 4000
+            ],
+             0
+        ];
+        yield [
+            [
+                0, 0
+            ],
+            false
+        ];
+        yield [
+            [
+                4000, 4000
+            ],
+            5.00
+        ];
     }
 }

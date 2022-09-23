@@ -43,20 +43,21 @@ class GitHubService implements scoreInterface
             sprintf('https://api.github.com/search/issues?&q=%s+sucks', $param)
         )->toArray();
 
-        if ($positive['total_count'] === 0 && $negative['total_count'] === 0) {
-            return false;
-        }
 
-        return $this->calcScore($positive['total_count'], $negative['total_count']);
+        return $this->calcScore((int)$positive['total_count'], (int)$negative['total_count']);
     }
 
+
     /**
-     * @param string $positive
-     * @param string $negative
-     * @return float
+     * @param int $positive
+     * @param int $negative
+     * @return float|bool
      */
-    public function calcScore(string $positive, string $negative): float
+    public function calcScore(int $positive, int $negative): float|bool
     {
+        if ($positive === 0 && $negative === 0) {
+            return false;
+        }
         return round($positive / (($positive + $negative) / 10), 2);
     }
 }
